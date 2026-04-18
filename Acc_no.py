@@ -20,5 +20,5 @@ class account:
         return self.balance
 
 acc = account(1234, 1000)
-acc.credit(int(input("Enter a credit amount:")))
-acc.debit(int(input("Enter debit amount:")))
+acc.credit(int(input("Enter a credit amount:  ")))
+acc.debit(int(input("Enter debit amount:  ")))
