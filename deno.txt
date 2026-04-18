@@ -1,0 +1,9 @@
+API id
+AIzaSyDIpbCluIE5ihPRkLCC06OpxHdIbyWRRrw
+
+#progammable search engine id 
+<script async src="https://cse.google.com/cse.js?cx=6687748aa89074d28">
+</script>
+<div class="gcse-search"></div>
+another code
+6687748aa89074d28
