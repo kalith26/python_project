@@ -7,6 +7,8 @@ import os
 import psutil
 import pyautogui
 import tkinter as tk
+import platform
+import subprocess # Added for app launching
 from tkinter import scrolledtext, messagebox
 from threading import Thread
 
@@ -15,7 +17,6 @@ engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
 engine.setProperty('rate', 185)
 
-# Language Data Map
 LANG_DATA = {
     "english": {"code": "en-IN", "voice_keyword": "Zira", "msg": "System Online."},
     "hindi": {"code": "hi-IN", "voice_keyword": "Hemant", "msg": "नमस्ते, मैं इग्रीस हूँ।"},
@@ -35,36 +36,23 @@ class MegaIgries:
         self.set_voice("english")
         self.speak("Mega Systems Initialized. All protocols active.")
 
-    # --- GUI INTERFACE ---
     def setup_gui(self):
-        # Header Area
         self.header = tk.Label(self.root, text="I G R I E S", font=("Impact", 40), bg="#020d18", fg="#00d9ff")
         self.header.pack(pady=10)
-
-        # Status Bar
         self.status = tk.Label(self.root, text="● STANDBY", font=("Consolas", 10), bg="#020d18", fg="#00ff00")
         self.status.pack()
-
-        # Main Display Console
         self.console = scrolledtext.ScrolledText(self.root, font=("Consolas", 11), bg="#011627", fg="#00d9ff", state='disabled', wrap=tk.WORD)
         self.console.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
-
-        # Writing Input Model
         self.input_box = tk.Entry(self.root, font=("Arial", 14), bg="#0b243b", fg="white", insertbackground="white", borderwidth=0)
         self.input_box.pack(padx=20, pady=10, fill=tk.X)
         self.input_box.bind("<Return>", lambda e: self.process_text())
-
-        # Control Buttons
         btn_frame = tk.Frame(self.root, bg="#020d18")
         btn_frame.pack(pady=10)
-
         self.v_btn = tk.Button(btn_frame, text="🎤 VOICE ACCESS", font=("Arial", 10, "bold"), bg="#00d9ff", command=self.start_voice_thread)
         self.v_btn.grid(row=0, column=0, padx=10)
-
         self.m_btn = tk.Button(btn_frame, text="📋 GENERATE REPORT", font=("Arial", 10, "bold"), bg="#555", fg="white", command=self.generate_report)
         self.m_btn.grid(row=0, column=1, padx=10)
 
-    # --- CORE FUNCTIONS ---
     def set_voice(self, lang):
         target = LANG_DATA[lang]["voice_keyword"]
         for v in voices:
@@ -79,7 +67,6 @@ class MegaIgries:
         self.console.insert(tk.END, f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {sender}: {text}\n\n")
         self.console.config(state='disabled')
         self.console.see(tk.END)
-        # Save to permanent memory
         with open(self.memory_file, "a", encoding="utf-8") as f:
             f.write(f"{sender}: {text} ({datetime.datetime.now()})\n")
 
@@ -91,7 +78,6 @@ class MegaIgries:
     def start_voice_thread(self):
         Thread(target=self.voice_input, daemon=True).start()
 
-    # --- INPUT MODEL 1: VOICE ---
     def voice_input(self):
         r = sr.Recognizer()
         with sr.Microphone() as source:
@@ -108,7 +94,6 @@ class MegaIgries:
         finally:
             self.status.config(text="● STANDBY", fg="#00ff00")
 
-    # --- INPUT MODEL 2: WRITING ---
     def process_text(self):
         query = self.input_box.get()
         if query:
@@ -116,7 +101,39 @@ class MegaIgries:
             self.input_box.delete(0, tk.END)
             self.handle_logic(query.lower())
 
-    # --- BRAIN: ADVANCED LOGIC ---
+    # --- INTEGRATED: APP & WEB OPENER ---
+    def open_app_or_website(self, name):
+        websites = {
+            "google": "https://www.google.com",
+            "youtube": "https://www.youtube.com",
+            "github": "https://www.github.com",
+            "facebook": "https://www.facebook.com",
+            "instagram": "https://www.instagram.com",
+            "whatsapp": "https://web.whatsapp.com",
+            "gmail": "https://mail.google.com",
+            "stackoverflow": "https://stackoverflow.com",
+            "wikipedia": "https://www.wikipedia.org",
+            "twitter": "https://www.twitter.com",
+            "linkedin": "https://www.linkedin.com",
+            "reddit": "https://www.reddit.com",
+            "netflix": "https://www.netflix.com",
+            "chatgpt": "https://chat.openai.com",
+        }
+        if name in websites:
+            webbrowser.open(websites[name])
+            self.speak(f"Opening {name} in your browser!")
+            return
+        try:
+            self.speak(f"Trying to open {name}...")
+            if platform.system() == "Windows":
+                os.system(f'start {name}')
+            elif platform.system() == "Darwin":
+                subprocess.Popen(["open", "-a", name])
+            else:
+                subprocess.Popen([name])
+        except Exception as e:
+            self.speak(f"Could not open {name}.")
+
     def handle_logic(self, query):
         # 1. DATABASE/WIKI SEARCH
         if 'wikipedia' in query:
@@ -127,14 +144,15 @@ class MegaIgries:
                 self.speak(info)
             except: self.speak("No data found.")
 
-        # 2. WEB NAVIGATION
+        # 2. WEB & APP NAVIGATION
+        elif 'open' in query:
+            target = query.replace("open", "").strip()
+            self.open_app_or_website(target)
+
         elif 'google search' in query:
             term = query.replace("google search", "").strip()
             self.speak(f"Searching Google for {term}")
             webbrowser.open(f"https://google.com{term}")
-
-        elif 'open youtube' in query:
-            webbrowser.open("youtube.com")
 
         # 3. SYSTEM UTILITIES
         elif 'battery' in query:
@@ -172,17 +190,15 @@ class MegaIgries:
             self.root.destroy()
 
     def generate_report(self):
-        """Displays and speaks all user commands from memory."""
         if os.path.exists(self.memory_file):
             with open(self.memory_file, "r") as f:
                 data = f.readlines()
-                last_items = "".join(data[-5:]) # Last 5 commands
+                last_items = "".join(data[-5:])
                 self.speak("Displaying recent system instructions.")
                 messagebox.showinfo("Igries Memory Report", last_items)
         else:
             self.speak("No historical data found.")
 
-# --- EXECUTION ---
 if __name__ == "__main__":
     root = tk.Tk()
     app = MegaIgries(root)
