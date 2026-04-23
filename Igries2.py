@@ -33,7 +33,7 @@ LANG_DATA = {
 class MegaIgries:
     def __init__(self, root):
         self.root = root
-        self.root.title("IGRIES - MEGA ASSISTANT V4.0 (MERGED)")
+        self.root.title("IGRIES - MEGA ASSISTANT V4.0 (FULL SYSTEM ACCESS)")
         self.root.geometry("700x850")
         self.root.configure(bg="#020d18")
         self.current_lang = "english"
@@ -41,7 +41,7 @@ class MegaIgries:
 
         self.setup_gui()
         self.set_voice("english")
-        self.speak("Mega Systems Initialized. All protocols merged and active.")
+        self.speak("Mega Systems Initialized. Full system access protocols active.")
 
     def setup_gui(self):
         self.header = tk.Label(self.root, text="I G R I E S", font=("Impact", 40), bg="#020d18", fg="#00d9ff")
@@ -108,27 +108,40 @@ class MegaIgries:
             self.input_box.delete(0, tk.END)
             self.handle_logic(query.lower())
 
-    # --- ADVANCED UTILITIES ---
+    # --- SYSTEM ACCESS UTILITIES ---
+    def list_running_apps(self):
+        apps = set()
+        for proc in psutil.process_iter(['name']):
+            try: apps.add(proc.info['name'])
+            except: continue
+        self.speak(f"System is currently running {len(apps)} processes. Check console for list.")
+        print(f"ACTIVE APPS: {list(apps)}")
+
+    def list_directory(self, path="."):
+        try:
+            target = os.path.expanduser(path)
+            items = os.listdir(target)
+            self.speak(f"Directory contains {len(items)} items. Logging results.")
+            self.log("SYSTEM", f"Contents of {target}: {items[:20]}")
+        except Exception as e:
+            self.speak(f"Error accessing path: {e}")
+
     def open_app_or_website(self, name):
         websites = {
             "google": "https://www.google.com", "youtube": "https://www.youtube.com",
             "github": "https://www.github.com", "facebook": "https://www.facebook.com",
             "instagram": "https://www.instagram.com", "whatsapp": "https://web.whatsapp.com",
-            "gmail": "https://mail.google.com", "stackoverflow": "https://stackoverflow.com",
-            "wikipedia": "https://www.wikipedia.org", "chatgpt": "https://chat.openai.com"
+            "gmail": "https://mail.google.com", "stackoverflow": "https://stackoverflow.com"
         }
         if name in websites:
             webbrowser.open(websites[name])
-            self.speak(f"Opening {name} in your browser!")
+            self.speak(f"Opening {name}!")
             return
         try:
-            self.speak(f"Trying to launch {name}...")
-            if platform.system() == "Windows":
-                os.system(f'start {name}')
-            else:
-                subprocess.Popen([name])
-        except:
-            self.speak(f"Could not open {name}.")
+            self.speak(f"Launching {name}...")
+            if platform.system() == "Windows": os.system(f'start {name}')
+            else: subprocess.Popen([name])
+        except: self.speak(f"Could not open {name}.")
 
     def file_manager(self, action, filename):
         try:
@@ -141,32 +154,41 @@ class MegaIgries:
                     else: shutil.rmtree(filename)
                     self.speak(f"Item {filename} deleted.")
                 else: self.speak("File not found.")
-        except Exception as e:
-            self.speak(f"File error: {e}")
+        except Exception as e: self.speak(f"File error: {e}")
 
-    # --- BRAIN: MERGED LOGIC ---
+    # --- BRAIN: UPDATED LOGIC ---
     def handle_logic(self, query):
-        # 1. Wikipedia Search
-        if 'wikipedia' in query:
+        # 1. System Access Commands
+        if 'list apps' in query or 'running processes' in query:
+            self.list_running_apps()
+        
+        elif 'show files' in query:
+            path = query.replace("show files", "").replace("in", "").strip()
+            self.list_directory(path if path else ".")
+
+        elif 'open folder' in query:
+            path = query.replace("open folder", "").strip()
+            if not path: path = "."
+            os.startfile(os.path.abspath(path))
+            self.speak(f"Opening folder at {path}")
+
+        # 2. Existing Navigation & Search
+        elif 'wikipedia' in query:
             topic = query.replace("wikipedia", "").strip()
             self.speak(f"Searching Wikipedia for {topic}...")
-            try:
-                info = wikipedia.summary(topic, sentences=2)
-                self.speak(info)
-            except: self.speak("No Wikipedia data found.")
+            try: self.speak(wikipedia.summary(topic, sentences=2))
+            except: self.speak("No data found.")
 
-        # 2. Web/App Launching
         elif 'open' in query:
             target = query.replace("open", "").strip()
             self.open_app_or_website(target)
 
-        # 3. Google Search
         elif 'google' in query or 'search' in query:
             term = query.replace("google", "").replace("search", "").strip()
-            self.speak(f"Searching Google for {term}")
             webbrowser.open(f"https://www.google.com/search?q={term}")
+            self.speak(f"Searching for {term}")
 
-        # 4. File Operations
+        # 3. File Operations
         elif 'create file' in query:
             fname = query.replace("create file", "").strip()
             self.file_manager("create", fname if fname else "new_file.txt")
@@ -175,17 +197,18 @@ class MegaIgries:
             fname = query.replace("delete", "").strip()
             self.file_manager("delete", fname)
 
-        # 5. System Stats
+        # 4. Utilities
         elif 'battery' in query:
-            batt = psutil.sensors_battery()
-            self.speak(f"System battery is at {batt.percent} percent.")
+            self.speak(f"Battery is at {psutil.sensors_battery().percent} percent.")
         elif 'cpu' in query:
-            self.speak(f"Current processor load is {psutil.cpu_percent()} percent.")
+            self.speak(f"Processor load is {psutil.cpu_percent()} percent.")
         elif 'screenshot' in query:
             pyautogui.screenshot("igries_capture.png")
             self.speak("Screenshot saved.")
+        elif 'the time' in query:
+            self.speak(f"The time is {datetime.datetime.now().strftime('%I:%M %p')}")
 
-        # 6. Language & UI
+        # 5. Language Modes
         elif 'tamil mode' in query:
             if self.set_voice("tamil"): self.speak(LANG_DATA["tamil"]["msg"])
         elif 'hindi mode' in query:
@@ -193,8 +216,8 @@ class MegaIgries:
         elif 'english mode' in query:
             self.set_voice("english")
             self.speak("English mode active.")
-        elif 'the time' in query:
-            self.speak(f"The time is {datetime.datetime.now().strftime('%I:%M %p')}")
+
+        # 6. Exit
         elif 'shutdown' in query or 'exit' in query:
             self.speak("IGRIES powering down. Goodbye.")
             self.root.destroy()
@@ -202,10 +225,9 @@ class MegaIgries:
     def generate_report(self):
         if os.path.exists(self.memory_file):
             with open(self.memory_file, "r") as f:
-                data = f.readlines()
-                last_items = "".join(data[-10:]) # Show last 10 lines
-                messagebox.showinfo("Igries Merged Memory", last_items)
-        else: self.speak("Memory is empty.")
+                last_items = "".join(f.readlines()[-10:])
+                messagebox.showinfo("Igries System Report", last_items)
+        else: self.speak("No data found.")
 
 if __name__ == "__main__":
     root = tk.Tk()
