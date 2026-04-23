@@ -3,7 +3,8 @@ import string
 
 pass_len = 6
 
-char = string.ascii_letters + string.digits + string.punctuation
+char = string.digits
+#string.ascii_letters + string.digits + string.punctuation
 
 password = ""
 for i in range(pass_len):
