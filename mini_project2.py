@@ -9,5 +9,5 @@ password = ""
 for i in range(pass_len):
     password += random.choice(char)
 
-print(password)
+print("one time password:",password)
 
