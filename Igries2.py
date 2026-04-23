@@ -96,7 +96,7 @@ class MegaIgries:
         r = sr.Recognizer()
         with sr.Microphone() as source:
             self.status.config(text="● LISTENING", fg="red")
-            r.adjust_for_ambient_noise(source, duration=0.6)
+            r.adjust_for_ambient_noise(source, duration=0.8)
             audio = r.listen(source)
         try:
             self.status.config(text="● RECOGNIZING", fg="yellow")
