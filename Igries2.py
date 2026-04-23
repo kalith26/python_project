@@ -8,7 +8,8 @@ import psutil
 import pyautogui
 import tkinter as tk
 import platform
-import subprocess # Added for app launching
+import subprocess
+import shutil
 from tkinter import scrolledtext, messagebox
 from threading import Thread
 
@@ -16,6 +17,12 @@ from threading import Thread
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
 engine.setProperty('rate', 185)
+
+# Setting default female voice if available
+for v in voices:
+    if 'female' in v.name.lower() or 'zira' in v.name.lower():
+        engine.setProperty('voice', v.id)
+        break
 
 LANG_DATA = {
     "english": {"code": "en-IN", "voice_keyword": "Zira", "msg": "System Online."},
@@ -26,15 +33,15 @@ LANG_DATA = {
 class MegaIgries:
     def __init__(self, root):
         self.root = root
-        self.root.title("IGRIES - MEGA ASSISTANT V4.0")
-        self.root.geometry("700x800")
+        self.root.title("IGRIES - MEGA ASSISTANT V4.0 (MERGED)")
+        self.root.geometry("700x850")
         self.root.configure(bg="#020d18")
         self.current_lang = "english"
         self.memory_file = "igries_master_log.txt"
 
         self.setup_gui()
         self.set_voice("english")
-        self.speak("Mega Systems Initialized. All protocols active.")
+        self.speak("Mega Systems Initialized. All protocols merged and active.")
 
     def setup_gui(self):
         self.header = tk.Label(self.root, text="I G R I E S", font=("Impact", 40), bg="#020d18", fg="#00d9ff")
@@ -101,103 +108,104 @@ class MegaIgries:
             self.input_box.delete(0, tk.END)
             self.handle_logic(query.lower())
 
-    # --- INTEGRATED: APP & WEB OPENER ---
+    # --- ADVANCED UTILITIES ---
     def open_app_or_website(self, name):
         websites = {
-            "google": "https://www.google.com",
-            "youtube": "https://www.youtube.com",
-            "github": "https://www.github.com",
-            "facebook": "https://www.facebook.com",
-            "instagram": "https://www.instagram.com",
-            "whatsapp": "https://web.whatsapp.com",
-            "gmail": "https://mail.google.com",
-            "stackoverflow": "https://stackoverflow.com",
-            "wikipedia": "https://www.wikipedia.org",
-            "twitter": "https://www.twitter.com",
-            "linkedin": "https://www.linkedin.com",
-            "reddit": "https://www.reddit.com",
-            "netflix": "https://www.netflix.com",
-            "chatgpt": "https://chat.openai.com",
+            "google": "https://www.google.com", "youtube": "https://www.youtube.com",
+            "github": "https://www.github.com", "facebook": "https://www.facebook.com",
+            "instagram": "https://www.instagram.com", "whatsapp": "https://web.whatsapp.com",
+            "gmail": "https://mail.google.com", "stackoverflow": "https://stackoverflow.com",
+            "wikipedia": "https://www.wikipedia.org", "chatgpt": "https://chat.openai.com"
         }
         if name in websites:
             webbrowser.open(websites[name])
             self.speak(f"Opening {name} in your browser!")
             return
         try:
-            self.speak(f"Trying to open {name}...")
+            self.speak(f"Trying to launch {name}...")
             if platform.system() == "Windows":
                 os.system(f'start {name}')
-            elif platform.system() == "Darwin":
-                subprocess.Popen(["open", "-a", name])
             else:
                 subprocess.Popen([name])
-        except Exception as e:
+        except:
             self.speak(f"Could not open {name}.")
 
+    def file_manager(self, action, filename):
+        try:
+            if action == "create":
+                with open(filename, 'w') as f: f.write("")
+                self.speak(f"File {filename} created.")
+            elif action == "delete":
+                if os.path.exists(filename):
+                    if os.path.isfile(filename): os.remove(filename)
+                    else: shutil.rmtree(filename)
+                    self.speak(f"Item {filename} deleted.")
+                else: self.speak("File not found.")
+        except Exception as e:
+            self.speak(f"File error: {e}")
+
+    # --- BRAIN: MERGED LOGIC ---
     def handle_logic(self, query):
-        # 1. DATABASE/WIKI SEARCH
+        # 1. Wikipedia Search
         if 'wikipedia' in query:
             topic = query.replace("wikipedia", "").strip()
-            self.speak(f"Accessing archives for {topic}...")
+            self.speak(f"Searching Wikipedia for {topic}...")
             try:
                 info = wikipedia.summary(topic, sentences=2)
                 self.speak(info)
-            except: self.speak("No data found.")
+            except: self.speak("No Wikipedia data found.")
 
-        # 2. WEB & APP NAVIGATION
+        # 2. Web/App Launching
         elif 'open' in query:
             target = query.replace("open", "").strip()
             self.open_app_or_website(target)
 
-        elif 'google search' in query:
-            term = query.replace("google search", "").strip()
+        # 3. Google Search
+        elif 'google' in query or 'search' in query:
+            term = query.replace("google", "").replace("search", "").strip()
             self.speak(f"Searching Google for {term}")
-            webbrowser.open(f"https://google.com{term}")
+            webbrowser.open(f"https://www.google.com/search?q={term}")
 
-        # 3. SYSTEM UTILITIES
+        # 4. File Operations
+        elif 'create file' in query:
+            fname = query.replace("create file", "").strip()
+            self.file_manager("create", fname if fname else "new_file.txt")
+        
+        elif 'delete' in query:
+            fname = query.replace("delete", "").strip()
+            self.file_manager("delete", fname)
+
+        # 5. System Stats
         elif 'battery' in query:
             batt = psutil.sensors_battery()
             self.speak(f"System battery is at {batt.percent} percent.")
-
         elif 'cpu' in query:
-            use = psutil.cpu_percent()
-            self.speak(f"Current processor load is {use} percent.")
-
+            self.speak(f"Current processor load is {psutil.cpu_percent()} percent.")
         elif 'screenshot' in query:
             pyautogui.screenshot("igries_capture.png")
-            self.speak("Screenshot saved to root folder.")
+            self.speak("Screenshot saved.")
 
-        # 4. MEMORY REPOSTING
-        elif 'report' in query or 'repost' in query:
-            self.generate_report()
-
-        # 5. LANGUAGE MODES
+        # 6. Language & UI
         elif 'tamil mode' in query:
             if self.set_voice("tamil"): self.speak(LANG_DATA["tamil"]["msg"])
         elif 'hindi mode' in query:
             if self.set_voice("hindi"): self.speak(LANG_DATA["hindi"]["msg"])
         elif 'english mode' in query:
             self.set_voice("english")
-            self.speak("Restored English protocols.")
-
-        # 6. TIME
+            self.speak("English mode active.")
         elif 'the time' in query:
             self.speak(f"The time is {datetime.datetime.now().strftime('%I:%M %p')}")
-
-        # 7. EXIT
         elif 'shutdown' in query or 'exit' in query:
-            self.speak("Mega Systems powering down. Goodbye.")
+            self.speak("IGRIES powering down. Goodbye.")
             self.root.destroy()
 
     def generate_report(self):
         if os.path.exists(self.memory_file):
             with open(self.memory_file, "r") as f:
                 data = f.readlines()
-                last_items = "".join(data[-5:])
-                self.speak("Displaying recent system instructions.")
-                messagebox.showinfo("Igries Memory Report", last_items)
-        else:
-            self.speak("No historical data found.")
+                last_items = "".join(data[-10:]) # Show last 10 lines
+                messagebox.showinfo("Igries Merged Memory", last_items)
+        else: self.speak("Memory is empty.")
 
 if __name__ == "__main__":
     root = tk.Tk()
