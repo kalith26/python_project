@@ -26,7 +26,11 @@
     "[19:19:51] open WhatsApp",
     "[19:19:57] WhatsApp",
     "[19:20:14] Instagram",
-    "[19:20:52] exist"
+    "[19:20:52] exist",
+    "[20:19:12] open Chrome",
+    "[20:21:10] open chrome",
+    "[20:21:59] chrome",
+    "[20:22:10] whatsapp"
   ],
   "profile": {}
 }

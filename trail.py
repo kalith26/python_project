@@ -147,14 +147,19 @@ def get_combined_response(user_input):
         os.system("start cmd")
         return "Opening Command Prompt."
 
-#    elif "shutdown system" in user_input:
-#        # speak("Shutting down the computer in 10 seconds.")
+    elif "shutdown system" in user_input:
+        # speak("Shutting down the computer in 10 seconds.")
         # os.system("shutdown /s /t 10") 
-#        return "Shutdown command received. (Safety: Line commented out in code)"
+        return "Shutdown command received. (Safety: Line commented out in code)"
 
     elif "restart system" in user_input:
         os.system("shutdown /r /t 10")
         return "Restarting system."
+    
+    elif "sleep mode"or "on sleep mode" in user_input:
+        # Puts the computer to sleep using rundll32
+        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+        return "Entering sleep mode."
 
     elif "volume up" in user_input:
         for _ in range(5): pyautogui.press("volumeup")
@@ -320,10 +325,10 @@ speak("Hey there! I'm all set up and ready to go. What's the plan for today?.")
 #        speak(reply)
 #**************************************************  --or--   ********************************************************
 # 1. Ask the user for their preferred method
-mode = input("Would you like to use 'voice' or 'type'? ").strip().lower()
+mode = input("Would you like to use 'voice(1)' or 'type(2)'? ").strip().lower()
 
 while True:
-    if mode == "voice":
+    if mode == "1" or "voice":
         message = listen()
         if message is None:
             print("I couldn't hear you. Try again...")
