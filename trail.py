@@ -88,89 +88,86 @@ def get_combined_response(user_input):
 
     # Check for simple keywords first
 
-    if "voice off" in user_input:
+    if user_input in ["voice off", "exist", "igries close"]:
         voice_active = False
-        return simple_responses["voice off"]
-    if "voice on" in user_input:
+        return simple_responses["boss igries system is off"]
+    if user_input in ["voice on", "igries voice on"]:
         voice_active = True
-        return simple_responses["voice on"]
+        return simple_responses["igries system voice on"]
 
     # --- 2. WORK PROMPT LOGIC ---
-    if "open notepad" in user_input:
-        os.system("notepad.exe")
-        return simple_responses["open notepad"]
     
-    if "open google" in user_input:
+    if user_input in ["open google", "igries open google"]:
         webbrowser.open("https://google.com")
         return simple_responses["open google"]
     
-    if "open youtube" in user_input:
+    if user_input in ["open youtube", "igries open youtube"]:
         webbrowser.open("https://youtube.com")
         return "Opening YouTube. What would you like to watch?"
         
-    elif "open instagram" in user_input:
+    elif user_input in ["open instagram", "igries open instagram"]:
         webbrowser.open("https://instagram.com")
         return "Opening Instagram. Checking your feed."
         
-    elif "open facebook" in user_input:
+    elif user_input in ["open facebook","igries open facebook"]:
         webbrowser.open("https://facebook.com")
         return "Opening Facebook."
 
-    elif "open whatsapp" in user_input:
+    elif user_input in ["open whatsapp", "igries open whatsapp"]:
         webbrowser.open("https://whatsapp.com")
         return "Opening WhatsApp Web."
 
-    elif "open github" in user_input:
+    elif user_input in ["open github", "igries open github"]:
         webbrowser.open("https://github.com")
         return "Opening GitHub. Happy coding!"
 
-    elif "open email" in user_input or "open gmail" in user_input:
+    elif user_input in ["open gmail", "open email", "igries open gmail", "igries open email"]:
         webbrowser.open("https://mail.google.com")
         return "Opening your inbox."
 
     # --- 2. OS & SYSTEM CONTROLLING ---
-    elif "open notepad" in user_input:
+    elif user_input in ["open notepad", "igries open notepad"]:
         os.system("notepad.exe")
         return "Notepad is now open."
-    elif "close notepad" in user_input:
+    elif user_input.lower() in ["close notepad", "igries close notepad"]:
         os.system("taskkill /f /im notepad.exe")
         return "Closing Notepad."
 
-    elif "open calculator" in user_input:
+    elif user_input.lower() in ["open calculator", "igries open calculator"]:
         os.system("calc.exe")
         return "Opening Calculator."
-    elif "close calculator" in user_input:
+    elif user_input.lower() in ["close calculator", "igries close calculator"]:
         os.system("taskkill /f /im CalculatorApp.exe")
         return "Closing Calculator."
 
-    elif "open command prompt" in user_input or "open terminal" in user_input:
+    elif user_input.lower() in ["open terminal", "open cmd", "open command prompt", "igries open terminal","igries open cmd","igries open command prompt"]:
         os.system("start cmd")
         return "Opening Command Prompt."
 
-    elif "volume up" in user_input:
+    elif user_input.lower() in ["volume up","volume increase", "increase volume", "igries volume increase", "igries increase volume"]:
         for _ in range(5): pyautogui.press("volumeup")
         return "Increasing volume."
 
-    elif "volume down" in user_input:
+    elif user_input.lower() in ["volume down", "decrease volume","volume decrease","igries volume decrease", "igries volume down", "igries decrease volume"]:
         for _ in range(5): pyautogui.press("volumedown")
         return "Decreasing volume."
 
-    elif "mute" in user_input:
+    elif user_input.lower() in ["mute", "igries mute"]:
         pyautogui.press("volumemute")
         return "Toggling mute."
-    elif "unmute" in user_input:
+    elif user_input.lower() in ["unmute", "igries unmute"]:
         pyautogui.press("volumeup")
         pyautogui.press("volumedown") # Returns volume to original level but keeps it unmuted
         return "System unmuted."
     
-    elif "open settings" in user_input:
-        os.open("ms-settings:") # Opens main settings
+    elif user_input.lower() in ["open settings","igries open settings","settings"]:
+        os.system("ms-settings:") # Opens main settings
         return "Opening Windows Settings."
-    elif "close settings" in user_input:
+    elif user_input.lower() in ["close settings","igries close settings"]:
         os.system("taskkill /f /im SystemSettings.exe")
         return "Closing Settings."
         
-    elif "open file explorer" in user_input or "open documents" in user_input:
+    elif user_input.lower() in ["open file explorer","igries open file explorer","open documents", "igries open documents"]:
         os.startfile(os.path.expanduser("~/Documents")) # Opens Explorer at Documents
         return "Opening File Explorer."
     
@@ -188,7 +185,7 @@ def get_combined_response(user_input):
 #        except sbc.CalledProcessError:
 #            print("Failed to restart Explorer. Try running as Administrator.")
 
-    elif "close file explorer" in user_input.lower():
+    elif user_input.lower() in ["close file explorer", "igries close file explorer","close documents","igries close documents"]:
     # This command targets only folder windows
         cmd = "powershell -command \"(New-Object -ComObject Shell.Application).Windows() | ForEach-Object { $_.Quit() }\""
         os.system(cmd)
@@ -250,12 +247,18 @@ def get_combined_response(user_input):
         os.system(cmd)
         return "Bluetooth has been turned off."
 
-    elif user_input.lower() in ["battery saver on", "on battery saver", "igries on battery saver"]:
+    elif user_input.lower() in ["battery saver on", "on battery saver", "igries on battery saver","igries battery saver on"]:
         # This command triggers the Windows Power Saving mode
         cmd = 'powershell -command "Start-Process powershell -ArgumentList \'Set-ExecutionPolicy Bypass -Scope Process -Force; [AppServiceConnection]::new()\' -Verb RunAs"'
         # Simple fallback: opens the Battery Saver settings page directly
         os.system("start ms-settings:batterysaver")
         return "Opening battery saver settings. You can toggle it there."
+    
+    elif user_input.lower() in ["battery saver off","off battery saver","igries battery saver off","igries off battery saver"]:
+        cmd = 'poweshell -command "Get-WmiObject -Namespace root/Microsoft/Windows/SettingSync -Class Win32_BatterySaverSettings | ForEach-Object { $_.BatterySaveOff = $true; $_.put()}"'
+        os.system(cmd)
+        os.system("start ms-settings:batterysaver")
+        return "Battery saver has been turned off."
 
     # --- 3. BRIGHTNESS CONTROL ---
     elif user_input.lower() in ["brightness high", "increase brightness","brightness increase", "igries increase brightness","igries brightness increase","igries brightness high"]:
@@ -275,22 +278,22 @@ def get_combined_response(user_input):
         current_time = datetime.datetime.now().strftime("%I:%M %p")
         return f"The current time is {current_time}."
     
-    elif "shutdown system" in user_input:
-        # speak("Shutting down the computer in 10 seconds.")
-        # os.system("shutdown /s /t 10") 
+    elif user_input.lower() in ["shutdown system", "igries shutdown system"]:
+        speak("Shutting down the computer in 10 seconds.")
+        os.system("shutdown /s /t 10") 
         return "Shutdown command received. (Safety: Line commented out in code)"
 
-    elif "restart system" in user_input:
+    elif user_input.lower() in ["restart system", "igries restart system"]:
         os.system("shutdown /r /t 10")
         return "Restarting system."
     
-    elif "sleep mode" in user_input:
+    elif user_input.lower() in ["on sleep mode","sleep mode on", "igries on sleep mode ", "igries sleep mode on"]:
         # Puts the computer to sleep using rundll32
         speak("Sleep mode is On")
         os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
         return "Entering sleep mode."
     elif "" in user_input:
-        return "It not update"
+        return "Ur command is didn't update"
         
 
     # --- 3. DICTIONARY CHECK ---
@@ -312,7 +315,7 @@ def get_combined_response(user_input):
     return bot_text
 
 # 3. MAIN LOOP: Merged Logic
-speak("Hi I'm Igries your personal assistant.")
+speak("Hi I'm Igries your personal assistant. what can I help you")
 
 #*********************************************************************************
 #while True:
@@ -335,7 +338,8 @@ speak("Hi I'm Igries your personal assistant.")
 #        speak(reply)
 #**************************************************  --or--   ********************************************************
 # 1. Ask the user for their preferred method
-mode = input("Would you like to use 'voice(1)' or 'type(2)'? ").strip().lower()
+speak("choose anyone 1 is voice and 2 is type")
+mode = input("Would you like to use 'voice(1)' or 'type(2)'?  :").strip().lower()
 
 while True:
     if mode == "1" or mode == "voice":
