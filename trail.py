@@ -147,20 +147,6 @@ def get_combined_response(user_input):
         os.system("start cmd")
         return "Opening Command Prompt."
 
-    elif "shutdown system" in user_input:
-        # speak("Shutting down the computer in 10 seconds.")
-        # os.system("shutdown /s /t 10") 
-        return "Shutdown command received. (Safety: Line commented out in code)"
-
-    elif "restart system" in user_input:
-        os.system("shutdown /r /t 10")
-        return "Restarting system."
-    
-    elif "sleep mode"or "on sleep mode" in user_input:
-        # Puts the computer to sleep using rundll32
-        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
-        return "Entering sleep mode."
-
     elif "volume up" in user_input:
         for _ in range(5): pyautogui.press("volumeup")
         return "Increasing volume."
@@ -193,71 +179,78 @@ def get_combined_response(user_input):
         # Note: Closing explorer.exe restarts the Windows UI, use carefully.
 #        return "Restarting Explorer."
 
-# ... inside your input loop ...
-    elif "close file explorer" in user_input:
-        try:
-            # 'shell=True' allows us to use the '&&' operator to chain commands
-            sbc.run("taskkill /f /im explorer.exe && start explorer.exe", shell=True, check=True)
-            print("Explorer refreshed successfully.")
-        except sbc.CalledProcessError:
-            print("Failed to restart Explorer. Try running as Administrator.")
+# ... inside your input loop ... ==========================user it no problem
+#    elif "close file explorer" in user_input:
+#        try:
+#            # 'shell=True' allows us to use the '&&' operator to chain commands
+#            sbc.run("taskkill /f /im explorer.exe && start explorer.exe", shell=True, check=True)
+#            print("Explorer refreshed successfully.")
+#        except sbc.CalledProcessError:
+#            print("Failed to restart Explorer. Try running as Administrator.")
 
+    elif "close file explorer" in user_input.lower():
+    # This command targets only folder windows
+        cmd = "powershell -command \"(New-Object -ComObject Shell.Application).Windows() | ForEach-Object { $_.Quit() }\""
+        os.system(cmd)
+        print("Closed File Explorer windows.")
 
-    elif "open this pc" in user_input:
+    elif user_input.lower() in ["open this pc","igries open this pc"]:
         os.system("explorer shell:MyComputerFolder")
         return "Opening This PC."
+    elif user_input.lower() in ["close this pc", "igries close this pc"]:  #=============check
+        os.system("taskkill /f /im explorer.exe")
+        return "closing this pc"
 
-    elif "open desktop" in user_input:
+    elif user_input.lower() in ["open desktop", "open a desktop", "igries open desktop", "igries open a desktop"]: 
         os.startfile(os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop'))
         return "Showing your Desktop files."
+    elif user_input.lower() in ["close desktop", "close a desktop","igries open desktop","igries open a desktop"]:  #===========check
+        os.system("taskkill /f /im explorer.exe")
+        return "closing the desktop"
 
-    elif "open chrome"  in user_input:
+    elif user_input.lower() in ["open chrome", "open a chrome", "chrome open", "igries open a chrome"]:
         os.system("start chrome") # Requires Chrome in System PATH
         return "Launching Google Chrome."
-    elif "close chrome" in user_input:
+    elif user_input.lower() in ["close chrome", "close a chrome", "igries close a chrome", "igries close chrome","igries go on chrome", "close it"]:
         os.system("taskkill /f /im chrome.exe")
         return "Closing Chrome."
 
-    elif "open firefox" or "open a firefox" in user_input:
+    elif user_input.lower() in ["open firefox", "open a firefox", "igries open firefox","go on firefox","igries go on firefox"]:
         os.system("start firefox")
         return "Launching Firefox."
-    elif "close firefox" or "close a firefox" in user_input:
+    elif user_input in ["close firefox", "close a firefox", "igries close firefox"]:
         os.system("taskkill /f /im firefox.exe")
         return "Closing Firefox."
 
-    elif "open vs code" or "open Visual Studio Code" in user_input:
+    elif user_input.lower() in ["open vs code", "igries open vs code", "open visual studio code", "igries open visual studio code"]:
         os.system("code") # Requires VS Code in System PATH
         return "Opening Visual Studio Code."
-    elif "close vs code" or "close Visual studio code" in user_input:
+    elif user_input.lower() in ["close vs code", "close Visual studio code","igries close vs code", "igries close visual studio code" ]:
         os.system("taskkill /f /im Code.exe")
         return "Closing VS Code."
 
     # --- 2. HARDWARE & POWER MODES ---
-    elif "sleep mode"or "on sleep mode" in user_input:
-        # Puts the computer to sleep using rundll32
-        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
-        return "Entering sleep mode."
 
-    elif "wifi on"or "on wifi" in user_input:
+    elif user_input.lower() in ["on wifi", "wifi on", "igries on wifi", "igries wifi on"]:
         # Requires Admin privileges
         os.system("netsh interface set interface 'Wi-Fi' enabled")
         return "Enabling Wi-Fi."
-    elif "wifi off" or "off wifi" in user_input:
+    elif user_input.lower() in ["off wifi", "wifi off", "igries off wifi", "igries wifi off"]:
         os.system("netsh interface set interface 'Wi-Fi' disabled")
         return "Disabling Wi-Fi."
 
-    elif "bluetooth on" or "on bluetooth" in user_input:
+    elif user_input.lower() in ["on bluetooth", "bluetooth on", "igries on bluetooth", "igries bluetooth on"]:
         # This sends a PowerShell command to enable the Bluetooth radio
         cmd = 'powershell -command "Start-Service bthserv; Start-Process powershell -ArgumentList \'Set-NetAdapter -Name Bluetooth -Confirm:$false\' -Verb RunAs"'
         os.system(cmd)
         return "Attempting to turn on Bluetooth. Please wait."
-    elif "bluetooth off" or "off bluetooth" in user_input:
+    elif user_input.lower() in ["bluetooth off", "off bluetooth", "igries bluetooth off", "igries off bluetooth"]:
         # This command stops the Bluetooth service
         cmd = 'powershell -command "Stop-Service bthserv -Force"'
         os.system(cmd)
         return "Bluetooth has been turned off."
 
-    elif "battery saver on" or "on battery saver" in user_input:
+    elif user_input.lower() in ["battery saver on", "on battery saver", "igries on battery saver"]:
         # This command triggers the Windows Power Saving mode
         cmd = 'powershell -command "Start-Process powershell -ArgumentList \'Set-ExecutionPolicy Bypass -Scope Process -Force; [AppServiceConnection]::new()\' -Verb RunAs"'
         # Simple fallback: opens the Battery Saver settings page directly
@@ -265,22 +258,40 @@ def get_combined_response(user_input):
         return "Opening battery saver settings. You can toggle it there."
 
     # --- 3. BRIGHTNESS CONTROL ---
-    elif "brightness high" or "increase brightness"  in user_input:
+    elif user_input.lower() in ["brightness high", "increase brightness","brightness increase", "igries increase brightness","igries brightness increase","igries brightness high"]:
         sbc.set_brightness(100)
         return "Brightness set to maximum."
-    elif "brightness low" or "decrease brightness" in user_input:
+    elif user_input.lower() in ["brightness low", "brightness decrease","decrease brightness", "igries brightness decrease", "igries decrease brightness"]:
         sbc.set_brightness(10)
         return "Brightness set to 10 percent."
     
         # --- DATE COMMAND ---
-    elif "date" or "today date" in user_input:
+    elif  user_input.lower() in ["date", "today date", "igries today date", "igries date"]:
         current_date = datetime.datetime.now().strftime("%A, %B %d, %Y")
         return f"Today is {current_date}."
 
     # --- TIME COMMAND ---
-    elif "time" or "what time" in user_input:
+    elif user_input.lower() in ["time","igries time"]:
         current_time = datetime.datetime.now().strftime("%I:%M %p")
         return f"The current time is {current_time}."
+    
+    elif "shutdown system" in user_input:
+        # speak("Shutting down the computer in 10 seconds.")
+        # os.system("shutdown /s /t 10") 
+        return "Shutdown command received. (Safety: Line commented out in code)"
+
+    elif "restart system" in user_input:
+        os.system("shutdown /r /t 10")
+        return "Restarting system."
+    
+    elif "sleep mode" in user_input:
+        # Puts the computer to sleep using rundll32
+        speak("Sleep mode is On")
+        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+        return "Entering sleep mode."
+    elif "" in user_input:
+        return "It not update"
+        
 
     # --- 3. DICTIONARY CHECK ---
     
@@ -301,7 +312,7 @@ def get_combined_response(user_input):
     return bot_text
 
 # 3. MAIN LOOP: Merged Logic
-speak("Hey there! I'm all set up and ready to go. What's the plan for today?.")
+speak("Hi I'm Igries your personal assistant.")
 
 #*********************************************************************************
 #while True:
@@ -320,7 +331,6 @@ speak("Hey there! I'm all set up and ready to go. What's the plan for today?.")
 #        if "quit" in message.lower() or "exit" in message.lower():
 #            speak("Goodbye!")
 #            break
-            
 #        reply = get_combined_response(message)
 #        speak(reply)
 #**************************************************  --or--   ********************************************************
@@ -328,7 +338,7 @@ speak("Hey there! I'm all set up and ready to go. What's the plan for today?.")
 mode = input("Would you like to use 'voice(1)' or 'type(2)'? ").strip().lower()
 
 while True:
-    if mode == "1" or "voice":
+    if mode == "1" or mode == "voice":
         message = listen()
         if message is None:
             print("I couldn't hear you. Try again...")
