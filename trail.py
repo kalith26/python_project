@@ -8,10 +8,7 @@ import subprocess as sbc
 import datetime
 import platform
 import urllib
-import cv2
 import numpy as np
-import threading
-import time
 
 # 1. SETUP: Replace with your actual OpenAI API Key
 client = OpenAI(api_key="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")
@@ -462,7 +459,7 @@ def get_combined_response(user_input):
         return "give full sentence"
     
     # --- SCREENSHOT ---
-    elif "screenshot" in user_input.lower():
+    elif "screenshot" in user_input.lower():          #------belows not working
         filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
         pyautogui.screenshot(filename)
         return f"Screenshot saved as {filename}"
@@ -474,7 +471,7 @@ def get_combined_response(user_input):
 
     elif "stop recording" in user_input.lower():
         os.system("taskkill /f /im GameBar.exe")
-        return "Stopping screen recorder."
+        return "Stopping screen recorder."               #-----------above not working
     
         
     #------------------------------------------------------------------------------------------------------------------msedge search
