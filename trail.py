@@ -50,7 +50,7 @@ def get_combined_response(user_input):
     # Keep your original hardcoded responses for specific keywords
     simple_responses = {
         "how are you": "I'm just a computer program, but I'm functioning perfectly!",
-        "name": "I'm a Python chatbot with voice and AI memory.",
+        "name": "I'm a Python with voice and AI memory.",
         "hi": "Hello! I am your personal system assistant.",
         "hello": "Hi there! How can I help you today?",
         "hey": "Hey! I'm listening. What's up?",
@@ -152,7 +152,7 @@ def get_combined_response(user_input):
 #            sbc.run(["taskkill", "/F", "/IM", "firefox.exe"], capture_output=True)
         else:
             sbc.run(["pkill", "-f", "chrome"], capture_output=True)
-#            sbc.run(["pkill", "-f", "firefox"],  capture_output=True)
+            sbc.run(["pkill", "-f", "firefox"],  capture_output=True)
         return "Closed instagram tab. Browser shut down."
         
     elif user_input in ["open facebook","igries open facebook"]:
@@ -166,7 +166,7 @@ def get_combined_response(user_input):
 #            sbc.run(["taskkill", "/F", "/IM", "firefox.exe"], capture_output=True)
         else:
             sbc.run(["pkill", "-f", "chrome"], capture_output=True)
-#            sbc.run(["pkill", "-f", "firefox"],  capture_output=True)
+            sbc.run(["pkill", "-f", "firefox"],  capture_output=True)
         return "Closed facebook tab. Browser shut down."
 
 
@@ -655,7 +655,7 @@ speak("choose anyone 1 is voice and 2 is type")
 mode = input("Would you like to use 'voice(1)' or 'type(2)'?  :").strip().lower()
 
 while True:
-    if mode == "1" or mode == "voice":
+    if mode == "1" or mode == "2":
         message = listen()
         if message is None:
             print("I couldn't hear you. Try again...")
