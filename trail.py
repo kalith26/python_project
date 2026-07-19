@@ -5,10 +5,11 @@ import os
 import webbrowser
 import pyautogui
 import subprocess as sbc
+import screen_brightness_control
 import datetime
 import platform
 import urllib
-import numpy as np
+import psutil
 
 # 1. SETUP: Replace with your actual OpenAI API Key
 client = OpenAI(api_key="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")
@@ -422,13 +423,41 @@ def get_combined_response(user_input):
         os.system(cmd)
         os.system("start ms-settings:batterysaver")
         return "Battery saver has been turned off."
+    
+    # Add this block to your main command checking structure
+    elif user_input.lower() in ["check battery", "battery", "battery status", "battery percentage"]:
+        # Get the battery status object
+        battery = psutil.sensors_battery()
+    
+        if battery is None:
+            return "Battery information is not available on this device."
+        
+        percent = battery.percent
+    
+        # Check if battery is under the 20% threshold
+        if percent < 20 and not battery.power_plugged:
+            # Trigger your battery saver command here automatically if desired
+            os.system("start ms-settings:batterysaver")
+            return f"Warning: Battery is low at {percent}%. Opening Battery Saver settings."
+        else:
+            return f"Your battery is at {percent}%."
 
     # --- 3. BRIGHTNESS CONTROL ---
-    elif user_input.lower() in ["brightness high", "increase brightness","brightness increase", "igries increase brightness","igries brightness increase","igries brightness high"]:
-        sbc.set_brightness(100)
-        return "Brightness set to maximum."
+    elif user_input.lower() in ["brightness high", "increase brightness", "brightness increase", "igries increase brightness", "igries brightness increase", "igries brightness high"]:
+        try:
+            current = screen_brightness_control.get_brightness()
+            if isinstance(current, list):
+                current = current[0]
+            if current >= 100:
+                return "Brightness is already at maximum."
+            else:
+                screen_brightness_control.set_brightness(100)
+                return "Brightness set to maximum."
+        except Exception as e:
+            return f"Failed to set brightness: {e}"
     elif user_input.lower() in ["brightness low", "brightness decrease","decrease brightness", "igries brightness decrease", "igries decrease brightness"]:
-        sbc.set_brightness(10)
+        screen_brightness_control.set_brightness(10)
+        
         return "Brightness set to 10 percent."
     
         # --- DATE COMMAND ---
@@ -655,12 +684,12 @@ speak("choose anyone 1 is voice and 2 is type")
 mode = input("Would you like to use 'voice(1)' or 'type(2)'?  :").strip().lower()
 
 while True:
-    if mode == "1" or mode == "2":
+    if mode == "1":
         message = listen()
         if message is None:
             print("I couldn't hear you. Try again...")
             continue # Restart loop to try listening again
-    else:
+    elif mode == "2":
         # Default to typing if they didn't pick voice
         message = input("You (Type here): ").strip()
 
